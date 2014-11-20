@@ -85,10 +85,10 @@
 
   function addResource(result, collect, type){
     if(collect && collect.length){
-      collect.filter(function(uri){
-        var ret = loaded[uri] === true;
+      collect = collect.filter(function(uri){
+        var has = loaded[uri] === true;
         loaded[uri] = true;
-        return ret;
+        return !has;
       });
       if(collect.length){
         if(combo){
