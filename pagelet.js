@@ -187,18 +187,20 @@
       location.href = url;
     }
   }
+  
+  function filter(item){ return !!item; }
 
   document.documentElement.addEventListener('click', function(e){
-    e.preventDefault();
-    e.stopPropagation();
     var target = e.target;
     if(target.tagName.toLowerCase() === 'a'){
       var pagelets = target.getAttribute('data-pagelets');
       var parents = target.getAttribute('data-parents');
       var href = target.getAttribute('href');
-      pagelets = (pagelets || '').split(/\s*,\s*/);
-      parents = (parents || '').split(/\s*,\s*/);
+      pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
+      parents = (parents || '').split(/\s*,\s*/).filter(filter);
       if(href && parents.length === pagelets.length && pagelets.length > 0){
+        e.preventDefault();
+        e.stopPropagation();
         var map = {};
         pagelets.forEach(function(pagelet, index){
           map[pagelet] = parents[index];
