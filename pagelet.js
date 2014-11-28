@@ -7,12 +7,16 @@
   var combo = false;
   var DEFAULT_COMBO_PATTERN = '/co??%s';
   var comboPattern = DEFAULT_COMBO_PATTERN;
-  var supportPushState = 'pushState' in history;
+  var supportPushState =
+    global.history && global.history.pushState && global.history.replaceState &&
+      // pushState isn't reliable on iOS until 5.
+    !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]\D|WebApps\/.+CFNetwork)/);
 
-  window.addEventListener('popstate', function(e){
-    // TODO
-    var state = e.state;
-    location.href = state.url;
+  global.addEventListener('popstate', function(e){
+    state = e.state;
+    if(state){
+      location.href = state.url;
+    }
   }, false);
 
   function noop(){}
@@ -54,7 +58,7 @@
       e = (e||{}).error || new Error('load resource timeout');
       e.message = 'Error loading [' + url + ']: ' + e.message;
       callback(e);
-    }
+    };
     head.appendChild(node);
     if(isCss){
       if(isOldWebKit || !supportOnload){
@@ -115,7 +119,7 @@
     head.appendChild(node);
   }
 
-  var lastXHR;
+  var xhr, state;
 
   pagelet.go = function(url, pagelets, processHtml, progress){
     if(supportPushState && pagelets){
@@ -126,8 +130,18 @@
       }
       pagelets = pagelets.join(',');
       var quickling = url + (url.indexOf('?') === -1 ? '?' : '&') + 'pagelets=' + encodeURIComponent(pagelets);
-      if(lastXHR) lastXHR.abort();
-      var xhr = lastXHR = new global.XMLHttpRequest();
+      if(!state){
+        state = {
+          url: global.location.href,
+          title: document.title
+        };
+        global.history.replaceState(state, document.title);
+      }
+      if ( xhr && xhr.readyState < 4) {
+        xhr.onreadystatechange = noop;
+        xhr.abort();
+      }
+      xhr = new global.XMLHttpRequest();
       xhr.onprogress = progress;
       xhr.onreadystatechange = function(){
         if(xhr.readyState == 4){
@@ -144,11 +158,16 @@
               processHtml(error);
             } else {
               var title = result.title || document.title;
-              var state = {
+              state = {
                 url: url,
                 title: title
               };
-              history.pushState(state, title, url);
+              global.history.replaceState(state, title, url);
+              // Clear out any focused controls before inserting new page contents.
+              try {
+                document.activeElement.blur()
+              } catch (e) { }
+              document.title = title;
               var res = [];
               addResource(res, result.js, 'js');
               addResource(res, result.css, 'css');
@@ -159,6 +178,7 @@
                   var code = left + result.script.join(right + left) + right;
                   exec(code);
                 }
+                //TODO input[autofocus], textarea[autofocus]
                 done = noop;
               };
               if(res && res.length){
@@ -183,10 +203,13 @@
       };
       xhr.open('GET', quickling, true);
       xhr.send();
+      if (xhr.readyState > 0) {
+        global.history.pushState(null, "", url);
+      }
     } else {
       location.href = url;
     }
-  }
+  };
   
   function filter(item){ return !!item; }
 
