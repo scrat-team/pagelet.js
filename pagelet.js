@@ -216,11 +216,18 @@
   document.documentElement.addEventListener('click', function(e){
     var target = e.target;
     if(target.tagName.toLowerCase() === 'a'){
+      // Middle click, cmd click, and ctrl click should open
+      // links in a new tab as normal.
+      if ( e.which > 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) return;
+      // Ignore cross origin links
+      if ( location.protocol !== target.protocol || location.hostname !== target.hostname ) return;
+      
       var pagelets = target.getAttribute('data-pagelets');
       var parents = target.getAttribute('data-parents');
       var href = target.getAttribute('href');
       pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
       parents = (parents || '').split(/\s*,\s*/).filter(filter);
+
       if(href && parents.length === pagelets.length && pagelets.length > 0){
         e.preventDefault();
         e.stopPropagation();
