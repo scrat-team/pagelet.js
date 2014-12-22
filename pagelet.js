@@ -134,6 +134,7 @@
         xhr.onreadystatechange = noop;
         xhr.abort();
       }
+      xhr = new global.XMLHttpRequest();
       xhr.onprogress = progress;
       xhr.onreadystatechange = function(){
         if(xhr.readyState == 4) {
