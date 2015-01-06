@@ -12,13 +12,6 @@
       // pushState isn't reliable on iOS until 5.
     !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]\D|WebApps\/.+CFNetwork)/);
 
-  global.addEventListener('popstate', function(e){
-    state = e.state;
-    if(state){
-      location.href = state.url;
-    }
-  }, false);
-
   function noop(){}
 
   function load(url, type, callback){
@@ -222,6 +215,12 @@
   function filter(item){ return !!item; }
 
   pagelet.autoload = function(){
+    global.addEventListener('popstate', function(e){
+      state = e.state;
+      if(state){
+        location.href = state.url;
+      }
+    }, false);
     document.documentElement.addEventListener('click', function(e){
       var target = e.target;
       if(target.tagName.toLowerCase() === 'a'){
