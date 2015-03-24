@@ -3,10 +3,11 @@
   var loaded = {};
   var isOldWebKit = +navigator.userAgent.replace(/.*AppleWebKit\/(\d+)\..*/, '$1') < 536;
   var head = document.head || document.getElementsByTagName('head')[0];
-  var TIMEOUT = 60 * 1000;
-  var combo = false;
+  var TIMEOUT = 60 * 1000;  // pagelet请求的默认超时时间
+  var combo = false;        // 是否采用combo
   var DEFAULT_COMBO_PATTERN = '/co??%s';
   var comboPattern = DEFAULT_COMBO_PATTERN;
+    // 是否支持Html5的PushState
   var supportPushState =
     global.history && global.history.pushState && global.history.replaceState &&
       // pushState isn't reliable on iOS until 5.
@@ -232,13 +233,25 @@
 
         var pagelets = target.getAttribute('data-pagelets');
         var parents = target.getAttribute('data-parents');
+        var autocache   = target.getAttribute('data-autocache');
         var href = target.getAttribute('href');
+
         pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
         parents = (parents || '').split(/\s*,\s*/).filter(filter);
 
         if(href && parents.length === pagelets.length && pagelets.length > 0){
           e.preventDefault();
           e.stopPropagation();
+
+          if(autocache === 'cached') {
+            // 不触发pagelet请求
+            return false;
+          }          
+          if (autocache === 'false'){
+            // 让pagelet请求带上时间戳，避免命中浏览器缓存
+              href += (href.indexOf('?')>=0 ? '&': '?' ) +  '_ts='+Date.now();
+          }
+
           var map = {};
           pagelets.forEach(function(pagelet, index){
             map[pagelet] = parents[index];
@@ -254,6 +267,10 @@
                   if(dom){
                     dom.innerHTML = html[key];
                     dom = null;
+                    if(autocache === 'true') {
+                      // 下次点击不会触发pagelet请求
+                      target.setAttribute('data-autocache', 'cached');
+                    }
                   } else {
                     throw new Error('undefined parent dom [' + parent + ']');
                   }
