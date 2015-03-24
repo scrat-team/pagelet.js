@@ -3,10 +3,11 @@
   var loaded = {};
   var isOldWebKit = +navigator.userAgent.replace(/.*AppleWebKit\/(\d+)\..*/, '$1') < 536;
   var head = document.head || document.getElementsByTagName('head')[0];
-  var TIMEOUT = 60 * 1000;
-  var combo = false;
+  var TIMEOUT = 60 * 1000;  // pagelet请求的默认超时时间
+  var combo = false;        // 是否采用combo
   var DEFAULT_COMBO_PATTERN = '/co??%s';
   var comboPattern = DEFAULT_COMBO_PATTERN;
+    // 是否支持Html5的PushState
   var supportPushState =
     global.history && global.history.pushState && global.history.replaceState &&
       // pushState isn't reliable on iOS until 5.
