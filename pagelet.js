@@ -232,13 +232,25 @@
 
         var pagelets = target.getAttribute('data-pagelets');
         var parents = target.getAttribute('data-parents');
+        var autocache   = target.getAttribute('data-autocache');
         var href = target.getAttribute('href');
+
         pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
         parents = (parents || '').split(/\s*,\s*/).filter(filter);
 
         if(href && parents.length === pagelets.length && pagelets.length > 0){
           e.preventDefault();
           e.stopPropagation();
+
+          if(autocache === 'cached') {
+            // 不触发pagelet请求
+            return false;
+          }          
+          if (autocache === 'false'){
+            // 让pagelet请求带上时间戳，避免命中浏览器缓存
+              href += (href.indexOf('?')>=0 ? '&': '?' ) +  '_ts='+Date.now();
+          }
+
           var map = {};
           pagelets.forEach(function(pagelet, index){
             map[pagelet] = parents[index];
@@ -254,6 +266,10 @@
                   if(dom){
                     dom.innerHTML = html[key];
                     dom = null;
+                    if(autocache === 'true') {
+                      // 下次点击不会触发pagelet请求
+                      target.setAttribute('data-autocache', 'cached');
+                    }
                   } else {
                     throw new Error('undefined parent dom [' + parent + ']');
                   }
