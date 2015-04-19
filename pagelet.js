@@ -1,20 +1,34 @@
-;
-(function (global) {
+;(function (global) {
+    // 注册给全局的函数
     var pagelet = global.pagelet = {};
+    // 已加载资源记录，用于去重
     var loaded = {};
+    // 判断是否为旧版本浏览器
     var isOldWebKit = +navigator.userAgent.replace(/.*AppleWebKit\/(\d+)\..*/, '$1') < 536;
+    // document.head
     var head = document.head || document.getElementsByTagName('head')[0];
-    var TIMEOUT = 60 * 1000;  // pagelet请求的默认超时时间
-    var combo = false;        // 是否采用combo
+    // pagelet请求的默认超时时间，1分钟
+    var TIMEOUT = 60 * 1000;
+    // 是否需要combo，不用设置该项目，构建工具会生成
+    var combo = false;
+    // 默认的combo请求格式
     var DEFAULT_COMBO_PATTERN = '/co??%s';
+    // combo请求格式，不用设置该项目，构建工具会生成
     var comboPattern = DEFAULT_COMBO_PATTERN;
     // 是否支持Html5的PushState
     var supportPushState =
         global.history && global.history.pushState && global.history.replaceState &&
             // pushState isn't reliable on iOS until 5.
         !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]\D|WebApps\/.+CFNetwork)/);
+    // 一个空函数
     function noop() {}
 
+    /**
+     * 加载js、css资源
+     * @param url{String}
+     * @param type{String} 'js' or 'css'
+     * @param callback{Function}
+     */
     function load(url, type, callback) {
         var isScript = type === 'js';
         var isCss = type === 'css';
@@ -66,10 +80,21 @@
         }
     }
 
+    /**
+     * 判断类型
+     * @param obj{*}
+     * @param type{String}
+     */
     function is(obj, type) {
         return Object.prototype.toString.call(obj) === '[Object ' + type + ']';
     }
 
+    /**
+     * 添加资源，排重已加载资源
+     * @param result{Array}
+     * @param collect{Array}
+     * @param type{String}
+     */
     function addResource(result, collect, type) {
         if (collect && collect.length) {
             collect = collect.filter(function (uri) {
@@ -96,16 +121,27 @@
         }
     }
 
+    /**
+     * 执行页面脚本
+     * @param code{String}
+     */
     function exec(code) {
         var node = document.createElement('script');
         node.appendChild(document.createTextNode(code));
         head.appendChild(node);
     }
 
+    /**
+     * 数组元素非空过滤函数
+     */
     function filter(item) {
         return !!item;
     }
 
+    /**
+     * 取消正在加载中的ajax请求
+     * @param xhr{XMLHttpRequest}
+     */
     function abortXHR(xhr) {
         if ( xhr && xhr.readyState < 4) {
             xhr.onreadystatechange = noop;
@@ -113,6 +149,10 @@
         }
     }
 
+    /**
+     * 深度复制对象
+     * @param obj{*}
+     */
     function clone(obj){
         if(typeof obj === 'object'){
             var copy;
@@ -135,6 +175,12 @@
         }
     }
 
+    /**
+     * 处理url匹配
+     * @param pattern{String|RegExp}
+     * @param pathname{String}
+     * @param params{Object}
+     */
     function match(pattern, pathname, params){
         var keys = [];
         var root = normalize('/').replace(/\/$/, '');
@@ -158,12 +204,18 @@
         if (!match) {
             return false;
         }
+        params = params || {};
         match.forEach(function(m, i){
             params[keys[i-1] || i] = m;
         });
         return true;
     }
 
+    /**
+     * 匹配URL路径
+     * @param options{Object}
+     * @param event{Event}
+     */
     function route(options, event){
         var moveOn = true;
         var next = function(){ moveOn = true; };
@@ -178,17 +230,31 @@
         return !moveOn;
     }
 
+    /**
+     * 格式化url
+     * @param url{String}
+     */
     function normalize(url){
         anchor.href = url;
         return anchor.href;
     }
 
+    /**
+     * 获取跳转pagelet
+     * @param from{String}
+     * @param to{String}
+     */
     function getPagelets(from, to){
         from = normalize(from);
         to = normalize(to);
         return historyMap[from + MAP_CONCATOR + to] || historyMap[to + MAP_CONCATOR + from];
     }
 
+    /**
+     * 建立pagelet跳转映射表
+     * @param from{String}
+     * @param to{String}
+     */
     function setPagelets(from, to, pagelets){
         from = normalize(from);
         to = normalize(to);
@@ -203,26 +269,51 @@
         MAP_CONCATOR = '<->',
         anchor = document.createElement('a');
 
+    // pagelet加载前事件
     pagelet.EVENT_BEFORE_LOAD = 'before_load';
+    // pagelet加载失败事件
     pagelet.EVENT_LOAD_ERROR = 'load_error';
+    // pagelet加载完成事件
     pagelet.EVENT_LOAD_COMPLETED = 'load_completed';
+    // pagelet跳转错误事件
     pagelet.EVENT_GO_ERROR = 'load_error';
+    // popstate跳转错误事件
     pagelet.EVENT_BACK_ERROR = 'back_error';
+    // pagelet跳转加载完毕事件
     pagelet.EVENT_GO_LOADED = 'go_loaded';
+    // pagelet加载进度事件
     pagelet.EVENT_LOAD_PROGRESS = 'load_progress';
+    // pagelet执行页面脚本开始前事件
     pagelet.EVENT_BEFORE_EXEC_SCRIPTS = 'before_exec_scripts';
+    // pagelet执行页面脚本完成后事件
     pagelet.EVENT_AFTER_EXEC_SCRIPTS = 'after_exec_scripts';
+    // pagelet处理html前事件
     pagelet.EVENT_BEFORE_INSERT_HTML = 'before_insert_html';
+    // pagelet处理html后事件
     pagelet.EVENT_AFTER_INSERT_HTML = 'after_insert_html';
+    // pagelet跳转前事件
     pagelet.EVENT_BEFORE_GO = 'before_go';
+    // pagelet跳转后事件
     pagelet.EVENT_AFTER_GO = 'after_go';
+    // pagelet跳转完成事件
     pagelet.EVENT_GO_COMPLETED = 'go_completed';
 
+    /**
+     * 事件绑定
+     * @param type{String}
+     * @param callback{Function}
+     */
     pagelet.on = function(type, callback){
         var fns = listeners[type] || [];
         fns.push(callback);
         listeners[type] = fns;
     };
+
+    /**
+     * 解除事件绑定
+     * @param type{String}
+     * @param callback{Function}
+     */
     pagelet.off = function(type, callback){
         var fns = listeners[type];
         if(fns){
@@ -231,6 +322,12 @@
             });
         }
     };
+
+    /**
+     * 事件派发
+     * @param type{String}
+     * @param data{*}
+     */
     pagelet.emit = function(type, data){
         var fns = listeners[type];
         if(fns && fns.length){
@@ -239,6 +336,13 @@
             });
         }
     };
+
+    /**
+     * pagelet初始化，不要手动调用此函数，该函数的调用是由框架生成的
+     * @param cb{Boolean} 是否combo请求
+     * @param cbp{String} combo请求格式
+     * @param used{Array} 当前页面已加载过的资源
+     */
     pagelet.init = function (cb, cbp, used) {
         combo = !!cb;
         comboPattern = cbp || DEFAULT_COMBO_PATTERN;
@@ -248,6 +352,11 @@
             });
         }
     };
+
+    /**
+     * 加载pagelet
+     * @param options{Object}
+     */
     pagelet.load = function (options) {
         var url = options.url,
             pagelets = options.pagelets,
@@ -340,6 +449,12 @@
             location.href = url;
         }
     };
+
+    /**
+     * 压栈一个历史记录，返回一个函数，完成加载后调用
+     * @param options{Object}
+     * @return {Function}
+     */
     pagelet.pushState = function(options){
         if(!state){
             state = {
@@ -363,6 +478,11 @@
             } catch (e) {}
         }
     };
+
+    /**
+     * pagelet跳转
+     * @param options{Object}
+     */
     pagelet.go = function (options) {
         var pagelets = options.pagelets;
         //url, pagelets, callback, progress
@@ -408,12 +528,24 @@
             location.href = url;
         }
     };
+
+    /**
+     * 添加router，在pagelet跳转和popstate过程中拦截处理
+     * @param pattern{String|RegExp}
+     * @param callback{Function}
+     */
     pagelet.router = function(pattern, callback){
         routers.push({
             reg: pattern,
             callback: callback
         });
     };
+
+    /**
+     * 启动A标签跳转拦截
+     * @param defaultPagelet{String|Array} 默认的pagelet id
+     * @param eventType {String} 拦截事件，默认是click
+     */
     pagelet.autoload = function(defaultPagelet, eventType){
         if(supportPushState){
             if(typeof defaultPagelet === 'string'){
