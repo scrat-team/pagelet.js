@@ -442,7 +442,11 @@
                     }
                 }
             };
+            url += url.indexOf('?') === -1 ? '?' : '&';
+            url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
             xhr.open('GET', url, true);
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.setRequestHeader('X-Pagelets', pagelets.join(','));
             xhr.send();
         } else {
