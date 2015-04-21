@@ -254,6 +254,7 @@
      * 建立pagelet跳转映射表
      * @param from{String}
      * @param to{String}
+     * @param pagelets{Array}
      */
     function setPagelets(from, to, pagelets){
         from = normalize(from);
@@ -590,7 +591,7 @@
                                             dom.innerHTML = html[key];
                                             dom = null;
                                         } else {
-                                            throw new Error('undefined parent dom [' + key + ']');
+                                            console.error('undefined parent dom [' + key + ']');
                                         }
                                     }
                                 }
@@ -653,7 +654,7 @@
                                             }
                                             dom = null;
                                         } else {
-                                            throw new Error('undefined parent dom [' + key + ']');
+                                            console.error('undefined parent dom [' + key + ']');
                                         }
                                     }
                                 }
