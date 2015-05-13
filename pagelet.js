@@ -145,8 +145,9 @@
     function abortXHR(xhr) {
         if ( xhr && xhr.readyState < 4) {
             xhr.onreadystatechange = noop;
-            xhr.abort()
+            xhr.abort();
         }
+        clearTimeout(xhrTimer);
     }
 
     /**
@@ -263,7 +264,7 @@
         historyMap[to + MAP_CONCATOR + from] = pagelets;
     }
 
-    var xhr, state,
+    var xhr, state, xhrTimer,
         listeners = {},
         routers = [],
         historyMap = {},
@@ -355,6 +356,14 @@
     };
 
     /**
+     * 设置加载超时时间
+     * @param time {Number}
+     */
+    pagelet.timeout = function(time){
+        TIMEOUT = time >> 0;
+    };
+
+    /**
      * 加载pagelet
      * @param options{Object}
      */
@@ -368,6 +377,7 @@
         if (pagelets && pagelets.length) {
             pagelet.emit(pagelet.EVENT_BEFORE_LOAD, { options: options });
             var callback = function(err, data, done){
+                clearTimeout(xhrTimer);
                 callback = noop;
                 if(err){
                     pagelet.emit(pagelet.EVENT_LOAD_ERROR, { options: options, error: err });
@@ -450,6 +460,9 @@
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.setRequestHeader('X-Pagelets', pagelets.join(','));
             xhr.send();
+            xhrTimer = setTimeout(function(){
+                callback('timeout');
+            }, options.timeout || TIMEOUT);
         } else {
             location.href = url;
         }

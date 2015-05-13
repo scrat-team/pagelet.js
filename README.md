@@ -184,3 +184,13 @@ pagelet.router('/:page', function(ctx, options, event, next){
 ```js
 pagelet.autoload('layout', 'touchend');
 ```
+
+### pagelet.timeout(time);
+
+> 设置pagelet加载资源或者pagelet页面的超时时间，单位是ms，默认值为 ``600000``，即1分钟
+
+示例：
+
+```js
+pagelet.timeout(10*1000);
+```
