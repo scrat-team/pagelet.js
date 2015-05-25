@@ -453,6 +453,8 @@
                     }
                 }
             };
+
+            url = options.url           //add by manson 2015.5.19
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
             xhr.open('GET', url, true);
@@ -629,6 +631,7 @@
                     if (location.protocol !== target.protocol || location.hostname !== target.hostname) return;
                     var pagelets = target.getAttribute('data-pagelets');
                     var mode = (target.getAttribute('data-insert-type') || 'replace').toLocaleLowerCase();
+                    var historyReplace = Boolean(target.getAttribute('data-history-replace') || false);
                     var href = target.getAttribute('href');
                     pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
                     if (href && pagelets.length > 0) {
@@ -637,7 +640,7 @@
                         var opt = {};
                         opt.url = href;
                         opt.pagelets = pagelets;
-                        opt.replace = mode === 'prepend' || mode === 'append';
+                        opt.replace = historyReplace || (mode === 'prepend' || mode === 'append');
                         opt.error = function(){
                             location.replace(href);
                         };
