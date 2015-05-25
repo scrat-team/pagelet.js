@@ -71,7 +71,7 @@
             if (isOldWebKit || !supportOnload) {
                 intId = setInterval(function () {
                     if (node.sheet) {
-                        clearTimeout(id);
+                        clearTimeout(tid);
                         clearInterval(intId);
                         callback();
                     }
