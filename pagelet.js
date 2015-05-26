@@ -13,6 +13,8 @@
     var combo = false;
     // 默认的combo请求格式
     var DEFAULT_COMBO_PATTERN = '/co??%s';
+    // combo url 长度限制
+    var maxUrlLength = 2000;
     // combo请求格式，不用设置该项目，构建工具会生成
     var comboPattern = DEFAULT_COMBO_PATTERN;
     // 是否支持Html5的PushState
@@ -40,6 +42,7 @@
             callback('timeout');
         }, TIMEOUT);
         var intId;
+        var cssloaded = false;
         if (isScript) {
             node.type = 'text/javascript';
             node.src = url;
@@ -51,8 +54,15 @@
             node.href = url;
         }
         node.onload = node.onreadystatechange = function () {
+            if(isCss && cssloaded){
+                node = null;
+                return
+            }
             if (node && (!node.readyState || /loaded|complete/.test(node.readyState))) {
+                cssloaded = true
                 clearTimeout(tid);
+                clearInterval(intId);
+
                 node.onload = node.onreadystatechange = noop;
                 if (isScript && head && node.parentNode) head.removeChild(node);
                 callback();
@@ -70,7 +80,13 @@
         if (isCss) {
             if (isOldWebKit || !supportOnload) {
                 intId = setInterval(function () {
-                    if (node.sheet) {
+                    if(cssloaded){
+                        clearTimeout(tid);
+                        clearInterval(intId);
+                        return
+                    }
+                    if (node && node.sheet) {
+                        cssloaded = true
                         clearTimeout(tid);
                         clearInterval(intId);
                         callback();
@@ -104,9 +120,20 @@
             });
             if (collect.length) {
                 if (combo) {
-                    var uri = collect.join(',');
+                    var comboUrl = '';
+                    collect.forEach(function(uri){
+                        if(comboUrl.length + comboPattern.length + uri.length > maxUrlLength){
+                            result.push({
+                                uri: comboPattern.replace('%s', comboUrl.substring(1)),
+                                type: type
+                            });
+                            comboUrl = ',' + uri;
+                        } else {
+                            comboUrl += ',' + uri;
+                        }
+                    });
                     result.push({
-                        uri: comboPattern.replace('%s', uri),
+                        uri: comboPattern.replace('%s', comboUrl.substring(1)),
                         type: type
                     });
                 } else {
@@ -453,7 +480,6 @@
                     }
                 }
             };
-
             url = options.url           //add by manson 2015.5.19
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
@@ -631,7 +657,8 @@
                     if (location.protocol !== target.protocol || location.hostname !== target.hostname) return;
                     var pagelets = target.getAttribute('data-pagelets');
                     var mode = (target.getAttribute('data-insert-type') || 'replace').toLocaleLowerCase();
-                    var historyReplace = Boolean(target.getAttribute('data-history-replace') || false);
+                    var historyReplace = target.getAttribute('data-history-replace');
+                    historyReplace = historyReplace !== null && (historyReplace === '' || /^(yes|1|true)$/i.test(historyReplace));
                     var href = target.getAttribute('href');
                     pagelets = (pagelets || '').split(/\s*,\s*/).filter(filter);
                     if (href && pagelets.length > 0) {
@@ -640,7 +667,7 @@
                         var opt = {};
                         opt.url = href;
                         opt.pagelets = pagelets;
-                        opt.replace = historyReplace || (mode === 'prepend' || mode === 'append');
+                        opt.replace = historyReplace || mode === 'prepend' || mode === 'append';
                         opt.error = function(){
                             location.replace(href);
                         };
