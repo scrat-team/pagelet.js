@@ -13,6 +13,8 @@
     var combo = false;
     // 默认的combo请求格式
     var DEFAULT_COMBO_PATTERN = '/co??%s';
+    // combo url 长度限制
+    var maxUrlLength = 2000;
     // combo请求格式，不用设置该项目，构建工具会生成
     var comboPattern = DEFAULT_COMBO_PATTERN;
     // 是否支持Html5的PushState
@@ -105,9 +107,20 @@
             });
             if (collect.length) {
                 if (combo) {
-                    var uri = collect.join(',');
+                    var comboUrl = '';
+                    collect.forEach(function(uri){
+                        if(comboUrl.length + comboPattern.length + uri.length > maxUrlLength){
+                            result.push({
+                                uri: comboPattern.replace('%s', comboUrl.substring(1)),
+                                type: type
+                            });
+                            comboUrl = ',' + uri;
+                        } else {
+                            comboUrl += ',' + uri;
+                        }
+                    });
                     result.push({
-                        uri: comboPattern.replace('%s', uri),
+                        uri: comboPattern.replace('%s', comboUrl.substring(1)),
                         type: type
                     });
                 } else {
