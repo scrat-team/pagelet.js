@@ -42,7 +42,6 @@
             callback('timeout');
         }, TIMEOUT);
         var intId;
-        var cssloaded = false;
         if (isScript) {
             node.type = 'text/javascript';
             node.src = url;
@@ -54,12 +53,8 @@
             node.href = url;
         }
         node.onload = node.onreadystatechange = function () {
-            if(isCss && cssloaded){
-                node = null;
-                return
-            }
+            
             if (node && (!node.readyState || /loaded|complete/.test(node.readyState))) {
-                cssloaded = true
                 clearTimeout(tid);
                 clearInterval(intId);
 
@@ -80,13 +75,9 @@
         if (isCss) {
             if (isOldWebKit || !supportOnload) {
                 intId = setInterval(function () {
-                    if(cssloaded){
-                        clearTimeout(tid);
-                        clearInterval(intId);
-                        return
-                    }
+                    
                     if (node && node.sheet) {
-                        cssloaded = true
+                        node.onload = node.onreadystatechange = noop
                         clearTimeout(tid);
                         clearInterval(intId);
                         callback();
@@ -389,6 +380,14 @@
     pagelet.timeout = function(time){
         TIMEOUT = time >> 0;
     };
+
+    /**
+     * 取消正在执行的pagelet动作
+     */
+    pagelet.abort = function(){
+        abortXHR(xhr)
+        pagelet.emit(pagelet.EVENT_LOAD_ERROR, { error: 'user_abort' });
+    }
 
     /**
      * 加载pagelet
