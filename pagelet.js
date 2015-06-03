@@ -36,10 +36,20 @@
         var isCss = type === 'css';
         var node = document.createElement(isScript ? 'script' : 'link');
         var supportOnload = 'onload' in node;
-        var tid = setTimeout(function () {
+        var done = function(err){
             clearTimeout(tid);
             clearInterval(intId);
-            callback('timeout');
+            if(node){
+                node.onload = node.onreadystatechange = noop;
+                if (isScript && head && node.parentNode) {
+                    head.removeChild(node);
+                }
+                node = null;
+            }
+            callback('err');
+        };
+        var tid = setTimeout(function () {
+            done('timeout');
         }, TIMEOUT);
         var intId;
         if (isScript) {
@@ -54,29 +64,20 @@
         }
         node.onload = node.onreadystatechange = function () {
             if (node && (!node.readyState || /loaded|complete/.test(node.readyState))) {
-                clearTimeout(tid);
-                clearInterval(intId);
-                node.onload = node.onreadystatechange = noop;
-                if (isScript && head && node.parentNode) head.removeChild(node);
-                callback();
-                node = null;
+                done();
             }
         };
         node.onerror = function (e) {
-            clearTimeout(tid);
-            clearInterval(intId);
             e = (e || {}).error || new Error('load resource timeout');
             e.message = 'Error loading [' + url + ']: ' + e.message;
-            callback(e);
+            done(e);
         };
         head.appendChild(node);
         if (isCss) {
             if (isOldWebKit || !supportOnload) {
                 intId = setInterval(function () {
                     if (node.sheet) {
-                        clearTimeout(tid);
-                        clearInterval(intId);
-                        callback();
+                        done();
                     }
                 }, 20);
             }
