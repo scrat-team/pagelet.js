@@ -455,7 +455,7 @@
                                         if (len === 0) {
                                             callback(error, result, done);
                                         }
-                                        error = err;
+                                        error = error || err;
                                     });
                                 });
                             } else {
