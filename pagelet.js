@@ -46,7 +46,7 @@
                 }
                 node = null;
             }
-            callback('err');
+            callback(err);
         };
         var tid = setTimeout(function () {
             done('timeout');
