@@ -314,6 +314,16 @@
     pagelet.EVENT_AFTER_GO = 'after_go';
     // pagelet跳转完成事件
     pagelet.EVENT_GO_COMPLETED = 'go_completed';
+    
+    pagelet.route = route;
+    
+    /**
+     * 取消正在执行的pagelet加载请求
+     */
+    pagelet.abort = function(){
+        abortXHR(xhr);
+        pagelet.emit(pagelet.EVENT_LOAD_ERROR, { error: 'user_abort' });
+    }
 
     /**
      * 事件绑定
