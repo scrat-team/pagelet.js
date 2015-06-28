@@ -17,6 +17,8 @@
     var maxUrlLength = 2000;
     // combo请求格式，不用设置该项目，构建工具会生成
     var comboPattern = DEFAULT_COMBO_PATTERN;
+    // 版本标识
+    var hash = '0000000';
     // 是否支持Html5的PushState
     var supportPushState =
         global.history && global.history.pushState && global.history.replaceState &&
@@ -369,8 +371,9 @@
      * @param cb{Boolean} 是否combo请求
      * @param cbp{String} combo请求格式
      * @param used{Array} 当前页面已加载过的资源
+     * @param hs{String} 版本标识
      */
-    pagelet.init = function (cb, cbp, used) {
+    pagelet.init = function (cb, cbp, used, hs) {
         combo = !!cb;
         comboPattern = cbp || DEFAULT_COMBO_PATTERN;
         if (used && used.length) {
@@ -378,6 +381,7 @@
                 loaded[uri] = true;
             });
         }
+        hash = hs || '0000000';
     };
 
     /**
@@ -441,6 +445,11 @@
                         if (error) {
                             callback(error);
                         } else {
+                            if(result.hash && (result.hash !== hash)){
+                                callback('hash inconsistency');
+                                // return;
+                                location.replace(options.url);
+                            }
                             var res = [];
                             addResource(res, result.js, 'js');
                             addResource(res, result.css, 'css');
