@@ -447,8 +447,8 @@
                         } else {
                             if(result.hash && (result.hash !== hash)){
                                 callback('hash inconsistency');
-                                // return;
                                 location.replace(options.url);
+                                return;
                             }
                             var res = [];
                             addResource(res, result.js, 'js');
