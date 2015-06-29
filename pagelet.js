@@ -447,7 +447,7 @@
                         } else {
                             if(result.hash && (result.hash !== hash)){
                                 callback('hash inconsistency');
-                                location.replace(options.url);
+                                // location.replace(options.url);
                                 return;
                             }
                             var res = [];
