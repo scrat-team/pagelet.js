@@ -163,6 +163,7 @@
         if ( xhr && xhr.readyState < 4) {
             xhr.onreadystatechange = noop;
             xhr.abort();
+            pagelet.emit(pagelet.EVENT_LOAD_ERROR, { error: 'user_abort' });
         }
         clearTimeout(xhrTimer);
     }
@@ -207,15 +208,15 @@
         }
         if(typeof pattern === 'string'){
             pattern = pattern.replace(/:(\w+)|[\.\\\+\*\?\[\^\]\$\(\){}=!<>\|:\/]/g, function (_, key) {
-                if(key){
-                    keys.push(key);
-                    return '([\\w.\\-\\s]+)';
-                } else if(_ === '*'){
-                    return '.*?';
-                } else {
-                    return '\\' + _;
-                }
-            }) || '';
+                    if(key){
+                        keys.push(key);
+                        return '([\\w.\\-\\s]+)';
+                    } else if(_ === '*'){
+                        return '.*?';
+                    } else {
+                        return '\\' + _;
+                    }
+                }) || '';
             pattern = new RegExp('^' + pattern + '$');
         }
         var match = pathname.match(pattern);
@@ -316,16 +317,18 @@
     pagelet.EVENT_AFTER_GO = 'after_go';
     // pagelet跳转完成事件
     pagelet.EVENT_GO_COMPLETED = 'go_completed';
-    
+
     pagelet.route = route;
-    
+
     /**
      * 取消正在执行的pagelet加载请求
      */
     pagelet.abort = function(){
         abortXHR(xhr);
         pagelet.emit(pagelet.EVENT_LOAD_ERROR, { error: 'user_abort' });
-    }
+    };
+
+    pagelet.route = route;
 
     /**
      * 事件绑定
@@ -489,6 +492,8 @@
             };
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
+            url += '&_t=' + Math.random();
+
             xhr.open('GET', url, true);
             xhr.setRequestHeader('Accept', 'application/json');
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
