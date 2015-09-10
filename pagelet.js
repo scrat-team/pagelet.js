@@ -492,7 +492,7 @@
             };
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
-            // url += '&_t=' + Math.random();
+            url += '&_t=' + Math.random();
 
             xhr.open('GET', url, true);
             xhr.setRequestHeader('Accept', 'application/json');
@@ -579,8 +579,11 @@
                 };
                 global.history.replaceState(state, state.title, state.url);
             }
+            if(xhr && xhr.readyState != 4){
+                options.replace = true;
+            }
             pagelet.load(opt);
-            var push = xhr.readyState > 0 ? pagelet.pushState(options) : noop;
+            var push = pagelet.pushState(options);
         } else {
             location.href = url;
         }
