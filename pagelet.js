@@ -492,7 +492,7 @@
             };
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
-            url += '&_t=' + Math.random();
+            // url += '&_t=' + Math.random();
 
             xhr.open('GET', url, true);
             xhr.setRequestHeader('Accept', 'application/json');
