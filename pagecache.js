@@ -1,7 +1,7 @@
 /**
  * pagecache
  * 用于为pagelet请求添加缓存功能
- * 用法：pagecache(options);
+ * 用法：pagelet.cache(options);
  * options:
  *   max <Number>: 最大缓存页面数，默认是30页
  */
@@ -145,7 +145,7 @@
         return false;
     }
 
-    global.pagecache = function(options){
+    pagelet.cache = global.pagecache = function(options){
         options = options || {};
         MAX_CACHE_SIZE = options.max || MAX_CACHE_SIZE;
 
