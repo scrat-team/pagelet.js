@@ -4,7 +4,9 @@
  * 用法：pagelet.cache(options);
  * options:
  *   max <Number>: 最大缓存页面数，默认是30页
- *   defaultPagelet <String>: 要缓存的最外层pagelet的id，默认为null，会缓存整个body元素
+ *   defaultPagelet <String>: 要缓存的最外层pagelet的id，默认为null，
+ *   会缓存整个body元素，推荐设置为pagelet.autoload的第一个参数，详
+ *   情请看这里： https://github.com/scrat-team/pagelet.js#pageletautoloaddefaultpagelet-eventtype
  */
 
 (function(global){
