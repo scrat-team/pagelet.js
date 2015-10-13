@@ -4,6 +4,7 @@
  * 用法：pagelet.cache(options);
  * options:
  *   max <Number>: 最大缓存页面数，默认是30页
+ *   defaultPagelet <String>: 默认最外层的pagelet id
  */
 
 (function(global){
@@ -13,6 +14,7 @@
      * @type {number}
      */
     var MAX_CACHE_SIZE = 30;
+    var DEFAULT_PAGELET = null;
 
     var cached = {};
 
@@ -76,7 +78,8 @@
      * @returns {*}
      */
     function save(url){
-        var dom = document.querySelector('[data-pagelet=layout]');
+        var selector = DEFAULT_PAGELET ? '[data-pagelet=" + DEFAULT_PAGELET + "]' : 'body';
+        var dom = document.querySelector(selector);
         if(prevUrl){
             var scrollTop = getScrollTop();
             var fragment = document.createDocumentFragment();
@@ -148,6 +151,7 @@
     pagelet.cache = global.pagecache = function(options){
         options = options || {};
         MAX_CACHE_SIZE = options.max || MAX_CACHE_SIZE;
+        DEFAULT_PAGELET = options.defaultPagelet || null;
 
         // 监听html插入事件，将页面缓存起来
         pagelet.on(pagelet.EVENT_BEFORE_INSERT_HTML, function(e){
