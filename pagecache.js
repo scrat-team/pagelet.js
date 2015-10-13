@@ -4,7 +4,7 @@
  * 用法：pagelet.cache(options);
  * options:
  *   max <Number>: 最大缓存页面数，默认是30页
- *   defaultPagelet <String>: 默认最外层的pagelet id
+ *   defaultPagelet <String>: 要缓存的最外层pagelet的id，默认为null，会缓存整个body元素
  */
 
 (function(global){
