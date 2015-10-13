@@ -1,3 +1,11 @@
+/**
+ * pagecache
+ * 用于为pagelet请求添加缓存功能
+ * 用法：pagecache(options);
+ * options:
+ *   max <Number>: 最大缓存页面数，默认是30页
+ */
+
 (function(global){
 
     /**
