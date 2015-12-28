@@ -492,7 +492,22 @@
             };
             url += url.indexOf('?') === -1 ? '?' : '&';
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
-            // url += '&_t=' + Math.random();
+
+            // 支持由外部传参，按需增加pagelet的urlparam
+            if (({}).toString.call(options.params) === '[object Object]') {
+                var extra = [];
+                for (var key in options.params){
+                    extra.push(key + '=' + options.params[key]);
+                }
+
+                if (extra.length > 0) {
+                    url += '&' + extra.join('&');
+                }
+            } else if (({}).toString.call(options.params) === '[object String]') {
+                if (options.params.length > 0) {
+                    url += (options.params.indexOf('&') == 0 ? '' : '&') + options.params;
+                }
+            }
 
             xhr.open('GET', url, true);
             xhr.setRequestHeader('Accept', 'application/json');
@@ -678,9 +693,11 @@
                     if (href && pagelets.length > 0) {
                         e.preventDefault();
                         e.stopPropagation();
+
                         var opt = {};
                         opt.url = href;
                         opt.pagelets = pagelets;
+                        opt.params = target.getAttribute('data-params');
                         opt.replace = historyReplace || mode === 'prepend' || mode === 'append';
                         opt.error = function(){
                             location.replace(href);
