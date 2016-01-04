@@ -494,7 +494,7 @@
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
 
             // 支持由外部传参，按需增加pagelet的urlparam
-            if (({}).toString.call(options.params) === '[object Object]') {
+            if (Object.toString.call(options.params) === '[object Object]') {
                 var extra = [];
                 for (var key in options.params){
                     extra.push(key + '=' + options.params[key]);
@@ -502,10 +502,6 @@
 
                 if (extra.length > 0) {
                     url += '&' + extra.join('&');
-                }
-            } else if (({}).toString.call(options.params) === '[object String]') {
-                if (options.params.length > 0) {
-                    url += (options.params.indexOf('&') == 0 ? '' : '&') + options.params;
                 }
             }
 
@@ -697,7 +693,6 @@
                         var opt = {};
                         opt.url = href;
                         opt.pagelets = pagelets;
-                        opt.params = target.getAttribute('data-params');
                         opt.replace = historyReplace || mode === 'prepend' || mode === 'append';
                         opt.error = function(){
                             location.replace(href);
