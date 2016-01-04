@@ -92,7 +92,7 @@
      * @param type{String}
      */
     function is(obj, type) {
-        return Object.prototype.toString.call(obj) === '[Object ' + type + ']';
+        return Object.prototype.toString.call(obj) === '[object ' + type + ']';
     }
 
     /**
@@ -494,7 +494,7 @@
             url += '_pagelets=' + pagelets.join(',');   //必须加上个query，猜猜为啥？
 
             // 支持由外部传参，按需增加pagelet的urlparam
-            if (Object.toString.call(options.params) === '[object Object]') {
+            if (is(options.params, 'Object')) {
                 var extra = [];
                 for (var key in options.params){
                     extra.push(key + '=' + options.params[key]);
